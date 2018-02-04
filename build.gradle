@@ -31,12 +31,12 @@ android {
     }
 
     productFlavors {
-        aosp {
-            applicationId 'com.android.launcher3'
+        tripnhome {
+            applicationId 'com.tripndroid.tripnhome'
         }
 
         l3go {
-            applicationId 'com.android.launcher3'
+            applicationId 'com.tripndroid.tripnhome'
         }
     }
     sourceSets {
@@ -50,7 +50,7 @@ android {
             }
         }
 
-        aosp {
+        tripnhome {
             java.srcDirs = ['src_flags']
             manifest.srcFile "AndroidManifest.xml"
         }

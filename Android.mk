@@ -17,7 +17,7 @@
 LOCAL_PATH := $(call my-dir)
 
 #
-# Build rule for Launcher3 app.
+# Build rule for TripNHome
 #
 include $(CLEAR_VARS)
 
@@ -52,9 +52,11 @@ LOCAL_AAPT_FLAGS := \
 
 LOCAL_SDK_VERSION := current
 LOCAL_MIN_SDK_VERSION := 21
-LOCAL_PACKAGE_NAME := Launcher3
+LOCAL_PACKAGE_NAME := TripNHome
 LOCAL_PRIVILEGED_MODULE := true
-LOCAL_OVERRIDES_PACKAGES := Home Launcher2
+LOCAL_OVERRIDES_PACKAGES := Home Launcher2 Launcher3
+
+LOCAL_AAPT_FLAGS += --rename-manifest-package com.tripndroid.tripnhome
 
 LOCAL_FULL_LIBS_MANIFEST_FILES := $(LOCAL_PATH)/AndroidManifest-common.xml
 
@@ -63,7 +65,7 @@ LOCAL_JACK_COVERAGE_INCLUDE_FILTER := com.android.launcher3.*
 include $(BUILD_PACKAGE)
 
 #
-# Build rule for Launcher3 Go app for Android Go devices.
+# Build rule for TripNHome for Android Go devices.
 #
 include $(CLEAR_VARS)
 
@@ -99,9 +101,9 @@ LOCAL_AAPT_FLAGS := \
 
 LOCAL_SDK_VERSION := current
 LOCAL_MIN_SDK_VERSION := 21
-LOCAL_PACKAGE_NAME := Launcher3Go
+LOCAL_PACKAGE_NAME := TripNHomeGo
 LOCAL_PRIVILEGED_MODULE := true
-LOCAL_OVERRIDES_PACKAGES := Home Launcher2 Launcher3
+LOCAL_OVERRIDES_PACKAGES := Home Launcher2 Launcher3 Launcher3Go
 
 LOCAL_FULL_LIBS_MANIFEST_FILES := \
     $(LOCAL_PATH)/AndroidManifest.xml \
@@ -125,7 +127,7 @@ LOCAL_PROTOC_FLAGS := --proto_path=$(LOCAL_PATH)/protos/ --proto_path=$(LOCAL_PA
 LOCAL_PROTO_JAVA_OUTPUT_PARAMS := enum_style=java
 
 LOCAL_MODULE_TAGS := optional
-LOCAL_MODULE := launcher_proto_lib
+LOCAL_MODULE := tripnhome_proto_lib
 LOCAL_IS_HOST_MODULE := true
 LOCAL_STATIC_JAVA_LIBRARIES := host-libprotobuf-java-nano
 
