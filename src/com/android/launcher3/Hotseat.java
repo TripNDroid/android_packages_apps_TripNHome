@@ -21,6 +21,7 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.ArgbEvaluator;
 import android.animation.ValueAnimator;
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
@@ -53,6 +54,7 @@ public class Hotseat extends FrameLayout
 
     @ViewDebug.ExportedProperty(category = "launcher")
     private int mBackgroundColor;
+    private int mHotseatColor;
     @ViewDebug.ExportedProperty(category = "launcher")
     private ColorDrawable mBackground;
     private ValueAnimator mBackgroundColorAnimator;
@@ -67,13 +69,15 @@ public class Hotseat extends FrameLayout
 
     public Hotseat(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
+        final Resources res = context.getResources();
         mLauncher = Launcher.getLauncher(context);
         mHasVerticalHotseat = mLauncher.getDeviceProfile().isVerticalBarLayout();
         mBackgroundColor = ColorUtils.setAlphaComponent(
                 Themes.getAttrColor(context, android.R.attr.colorPrimary), 0);
         mBackground = new ColorDrawable(mBackgroundColor);
-        if (!FeatureFlags.LAUNCHER3_GRADIENT_ALL_APPS) {
-            setBackground(mBackground);
+        mHotseatColor = res.getColor(R.color.hotseat_color);
+        if (FeatureFlags.LAUNCHER3_GRADIENT_ALL_APPS) {
+            setBackgroundColor(mHotseatColor);
         }
     }
 
@@ -189,7 +193,7 @@ public class Hotseat extends FrameLayout
                 mBackgroundColorAnimator.cancel();
             }
             if (!animate) {
-                setBackgroundColor(color);
+                setBackgroundColor(mHotseatColor);
             } else {
                 mBackgroundColorAnimator = ValueAnimator.ofInt(mBackgroundColor, color);
                 mBackgroundColorAnimator.setEvaluator(new ArgbEvaluator());
@@ -220,6 +224,6 @@ public class Hotseat extends FrameLayout
     }
 
     public int getBackgroundDrawableColor() {
-        return mBackgroundColor;
+        return mHotseatColor;
     }
 }
