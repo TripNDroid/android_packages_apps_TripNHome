@@ -17,15 +17,21 @@
 package com.android.launcher3;
 
 import android.app.Activity;
+import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.app.FragmentManager;
+import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.preference.ListPreference;
 import android.preference.Preference;
@@ -33,6 +39,7 @@ import android.preference.PreferenceFragment;
 import android.provider.Settings;
 
 import com.android.launcher3.graphics.IconShapeOverride;
+import com.android.launcher3.icons.IconsHandler;
 import com.android.launcher3.notification.NotificationListener;
 import com.android.launcher3.util.SettingsObserver;
 import com.android.launcher3.views.ButtonPreference;
@@ -47,6 +54,9 @@ public class SettingsActivity extends Activity {
     public static final String NOTIFICATION_BADGING = "notification_badging";
     /** Hidden field Settings.Secure.ENABLED_NOTIFICATION_LISTENERS */
     private static final String NOTIFICATION_ENABLED_LISTENERS = "enabled_notification_listeners";
+
+    // Icon pack
+    public static final String KEY_ICON_PACK = "pref_icon_pack";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,10 +73,18 @@ public class SettingsActivity extends Activity {
     /**
      * This fragment shows the launcher preferences.
      */
-    public static class LauncherSettingsFragment extends PreferenceFragment {
+    public static class LauncherSettingsFragment extends PreferenceFragment 
+            implements SharedPreferences.OnSharedPreferenceChangeListener {
 
         private SystemDisplayRotationLockObserver mRotationLockObserver;
         private IconBadgingObserver mIconBadgingObserver;
+        private SharedPreferences mPrefs;
+
+        // Icon pack
+        private Preference mIconPackPref;
+        private String mDefaultIconPack;
+        private IconsHandler mIconsHandler;
+        private PackageManager mPackageManager;
 
         @Override
         public void onCreate(Bundle savedInstanceState) {
@@ -75,6 +93,18 @@ public class SettingsActivity extends Activity {
             addPreferencesFromResource(R.xml.launcher_preferences);
 
             ContentResolver resolver = getActivity().getContentResolver();
+            mPrefs = Utilities.getPrefs(getActivity().getApplicationContext());
+            mPrefs.registerOnSharedPreferenceChangeListener(this);
+
+            mIconPackPref = findPreference(KEY_ICON_PACK);
+            mIconPackPref.setOnPreferenceClickListener(preference -> {
+                mIconsHandler.showDialog(getActivity());
+                return true;
+            });
+            mPackageManager = getActivity().getPackageManager();
+            mDefaultIconPack = mPrefs.getString(KEY_ICON_PACK, getString(R.string.icon_pack_default));
+            mIconsHandler = IconCache.getIconsHandler(getActivity().getApplicationContext());
+            updateIconPackEntry();
 
             // Setup allow rotation preference
             Preference rotationPref = findPreference(Utilities.ALLOW_ROTATION_PREFERENCE_KEY);
@@ -128,6 +158,42 @@ public class SettingsActivity extends Activity {
                 mIconBadgingObserver = null;
             }
             super.onDestroy();
+        }
+
+        @Override
+        public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
+            switch (key) {
+                case KEY_ICON_PACK:
+                    updateIconPackEntry();
+                    break;
+            }
+        }
+
+        @Override
+        public void onPause() {
+            super.onPause();
+            mIconsHandler.hideDialog();
+        }
+
+        private void updateIconPackEntry() {
+            ApplicationInfo info = null;
+            String iconPack = mPrefs.getString(KEY_ICON_PACK, mDefaultIconPack);
+            String summary = getString(R.string.icon_pack_system);
+            Drawable icon = getResources().getDrawable(android.R.mipmap.sym_def_app_icon);
+
+            if (!mIconsHandler.isDefaultIconPack()) {
+                try {
+                    info = mPackageManager.getApplicationInfo(iconPack, PackageManager.GET_META_DATA);
+                } catch (PackageManager.NameNotFoundException ignored) {
+                }
+                if (info != null) {
+                    summary = mPackageManager.getApplicationLabel(info).toString();
+                    icon = mPackageManager.getApplicationIcon(info);
+                }
+            }
+
+            mIconPackPref.setSummary(summary);
+            mIconPackPref.setIcon(icon);
         }
     }
 
